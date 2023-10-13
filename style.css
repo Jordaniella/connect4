@@ -1,0 +1,240 @@
+:root {
+    --player1: #fccc54;
+    --player2: #fa6577;
+    --bg-color: rgba(255, 255, 255, 0.25);
+}
+
+* {
+    margin: 0;
+
+}
+
+body {
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 50px;
+    background: radial-gradient(circle, #4183dc 0%, rgba(36, 98, 128, 1) 100%);
+}
+
+.result {
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.result h1 {
+    text-align: center;
+    font-size: 30px;
+    font-weight: 300;
+    color: #FFF;
+    font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.game {
+    position: relative;
+}
+
+table {
+    border: 2px solid #000;
+    padding: 0.5rem;
+    border-radius: 2rem;
+    border-spacing: 0.7em;
+    z-index: 1;
+    background: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    /* border-radius: 10px; */
+    border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.circle {
+    position: absolute;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    filter: blur(.5px);
+    background: radial-gradient(circle at 20px 10px, #8db0d1 10%, #234169);
+    z-index: -1;
+}
+
+.one {
+    top: -50px;
+    left: -20px;
+    width: 90px;
+    height: 90px;
+}
+
+.two {
+    top: -50px;
+    right: -20px;
+    width: 100px;
+    height: 100px;
+}
+
+.three {
+    bottom: -50px;
+    left: 0px;
+    width: 80px;
+    height: 80px;
+}
+
+.four {
+    bottom: -10px;
+    right: -50px;
+}
+
+td {
+    /* border: 3px solid rgba(255, 255, 255, 0.12); */
+    border-radius: 100%;
+    width: 55px;
+    height: 55px;
+}
+
+td {
+    margin: 2rem;
+    box-shadow: -3px -2px 1px rgba(255, 255, 255, 0.178) inset, 3px 2px 1px rgba(0, 0, 0, .3) inset;
+    position: relative;
+    background-color: var(--bg-color);
+    box-shadow: -1.8px -1.8px 0px rgba(255, 255, 255, .3),
+        3px 2px 1px rgba(0, 0, 0, .3);
+    border: 3px solid var(--bg-color);
+    cursor: pointer;
+}
+
+.block {
+    width: 51px;
+    height: 51px;
+    border-radius: 50%;
+    z-index: 3;
+    position: relative;
+    font-size: 1.7rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: animate 500ms linear;
+}
+
+@keyframes animate {
+    from {
+        transform: translateY(-314px);
+        z-index: -1;
+        opacity: 0;
+    }
+
+    90% {
+        z-index: -1;
+    }
+
+    to {
+        transform: translateY(0);
+        z-index: 3;
+        opacity: 1;
+    }
+}
+
+td::after {
+    background: #000000c2;
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    border-radius: 50%;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+}
+
+.block.player1 {
+    background-color: var(--player1);
+    box-shadow: -3px -2px 1px rgba(255, 255, 255, .8) inset,
+        3px 2px 1px rgba(0, 0, 0, .3) inset;
+    border: 3px solid var(--player1);
+}
+
+.block.player2 {
+    background-color: var(--player2);
+    box-shadow: -3px -2px 1px rgba(255, 255, 255, .8) inset,
+        3px 2px 1px rgba(0, 0, 0, .3) inset;
+    border: 3px solid var(--player2);
+}
+
+.card {
+    width: 200px;
+    height: 150px;
+    background: rgba(255, 255, 255, 0.25);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    position: absolute;
+
+}
+
+.un img {
+    position: absolute;
+    left: 2px;
+    top: -9px;
+    width: 176px;
+}
+
+.deux img {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    width: 176px;
+}
+
+.un {
+    left: 30px;
+    transform: rotate(-20deg);
+    animation: blob 2s linear infinite alternate;
+}
+
+.deux {
+    right: 50px;
+    transform: rotate(10deg);
+    animation: blob 2s -1s linear infinite alternate;
+}
+
+.trois {
+    width: 100px;
+    height: 100px;
+    top: 50px;
+    right: 200px;
+    font-size: 4rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transform: rotate(-25deg);
+    animation: animeRotation 2s linear infinite;
+}
+
+.trois span {
+    margin-top: -10px;
+}
+@keyframes blob {
+    from {
+        transform: translateY(-60px);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+@keyframes animeRotation {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
