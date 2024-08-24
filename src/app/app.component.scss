@@ -1,0 +1,16 @@
+.main {
+    &.green {
+        background: linear-gradient(45deg, #0097B2, #7ED957);
+    }
+    &.blue {
+        background: linear-gradient(45deg, #5DEE, #004AAD);
+    }
+    &.yellow-pink {
+        background: linear-gradient(45deg, #FFF7AD, #FFA9F9);
+    }
+    &.blue-pink {
+        background: linear-gradient(45deg, #CB6BE6, #004AAD);
+    }
+    background: linear-gradient(45deg, #FF5757, #8C52FF) ;
+    min-height: 100vh;
+}

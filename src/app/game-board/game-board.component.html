@@ -1,0 +1,23 @@
+<app-header [isHome]="false"/>
+<div class="board container d-flex">
+    <div class="round">
+        <h1 class="white">Round</h1>
+        <h4 class="white">1 / 3</h4>
+    </div>
+    <div class="game">
+        @for (item of grid; track $index; let i = $index) {
+            <div class="lines center-block">
+                @for (content of item; track $index) {
+                    <div class="cols rounded" (click)="addTile(i,$index)">
+                        <div class="tile rounded" [ngClass]="{'red' : grid[i][$index] == 'red', 'yellow': grid[i][$index] == 'yellow'}"></div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+    <div class="score">
+        <h1 class="white">Score</h1>
+        <h4 class="white">You : {{userScore}}</h4>
+        <h4 class="white">IA : {{botScore}}</h4>
+    </div>
+</div>
