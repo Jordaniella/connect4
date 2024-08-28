@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { HeaderComponent } from '../header/header.component';
 import { NgClass } from '@angular/common';
+import { Minimax } from '../../utils/minimax';
 
 @Component({
   selector: 'app-game-board',
@@ -115,6 +116,11 @@ export class GameBoardComponent implements OnInit{
       this.turn = !this.turn; 
       this.totalTokens++;  // Incrémenter le compteur de jetons chaque fois qu'un jeton est ajouté
       // if (this.checkWinner(line, col)) console.log(this.turn ? "red" : "yellow")
+      let nextmove: Move;
+      let miniMax = new Minimax()
+      if(this.turn)
+        console.log("col, row = ",miniMax.minimaxWithAlphaBeta(this.grid, 3, -Infinity, Infinity, true,'red').move )
+
     }
   }
 
@@ -122,3 +128,7 @@ export class GameBoardComponent implements OnInit{
     this.grid = this.createEmptyGrid(6,7)
   }
 }
+type Move = {
+    col: number;
+    row: number;
+};
