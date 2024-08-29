@@ -1,13 +1,29 @@
-<nav class="nav-bar" [ngClass]="{'d-flex is-between is-align-center':!isHome, 'center-block':isHome}" >
-    @if (!isHome) {
-        <div class="is-relative center-block flex-column" routerLink="/game" routerLinkActive="active" >
-            <a class="nav-link " data-content="GAME">GAME</a>
-            <span class="nav-hidden">GAME</span></div>
-    }
-    <a [routerLink]="" class="nav-logo">CONNECT 4 <span>&copy;</span></a>
-    @if (!isHome) {
-        <div class="is-relative center-block flex-column" routerLink="/settings" routerLinkActive="active">
-            <a  class="nav-link " data-content="GAME">SETTINGS</a>
-            <span class="nav-hidden">SETTINGS</span></div>
-    }
+<nav
+  class="nav-bar"
+  [ngClass]="{
+    'd-flex is-between is-align-center': !isHome,
+    'center-block': isHome
+  }"
+>
+  @if (!isHome) {
+  <div
+    class="is-relative center-block flex-column"
+    routerLink="/game"
+    routerLinkActive="active"
+  >
+    <a class="nav-link" data-content="GAME">GAME</a>
+    <span class="nav-hidden">GAME</span>
+  </div>
+  }
+  <a [routerLink]="" class="nav-logo">CONNECT 4 <span>&copy;</span></a>
+  @if (!isHome) {
+  <div
+    class="is-relative center-block flex-column"
+    routerLink="/settings"
+    routerLinkActive="active"
+  >
+    <a class="nav-link" data-content="GAME">SETTINGS</a>
+    <span class="nav-hidden">SETTINGS</span>
+  </div>
+  }
 </nav>
