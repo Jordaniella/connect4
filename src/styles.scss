@@ -1,49 +1,49 @@
 /* You can add global styles to this file, and also import other style files */
 :root {
-    --section-padding: clamp(5em, 21vh, 12em);
+  --section-padding: clamp(2em, 10vh, 12em);
 }
 * {
-    padding: 0;
-    margin: 0;
-    box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
 }
 @font-face {
-    font-family: "poppins";
-    src: url("../src/assets/fonts/Poppins-Regular.ttf");
+  font-family: "poppins";
+  src: url("../src/assets/fonts/Poppins-Regular.ttf");
 }
 body {
-    font-family: "poppins";
+  font-family: "poppins";
 }
 .container {
-    margin: 0 auto;
-    padding-top: var(--section-padding);
+  margin: 0 auto;
+  padding: var(--section-padding) 0;
 }
 a {
-    text-decoration: none;
+  text-decoration: none;
 }
 .is-relative {
-    position: relative;
+  position: relative;
 }
 .rounded {
-    border-radius: 50%;
+  border-radius: 50%;
 }
 .d-flex {
-    display: flex;
+  display: flex;
 }
 .flex-column {
-    flex-direction: column;
+  flex-direction: column;
 }
 .center-block {
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 .is-between {
-    justify-content: space-between;
+  justify-content: space-between;
 }
 .is-align-center {
-    align-items: center;
+  align-items: center;
 }
 .white {
-    color: #FFFFFF;
+  color: #ffffff;
 }
