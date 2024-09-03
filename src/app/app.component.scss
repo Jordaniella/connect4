@@ -45,6 +45,7 @@
   transform-origin: bottom right;
   transform: scale(0);
   transition: transform 500ms ease;
+  z-index: 888;
 }
 .card {
   display: flex;
@@ -55,14 +56,14 @@
   margin-top: 20px;
 }
 .button {
-  position: absolute;
+  position: fixed;
   bottom: 0;
   right: 0;
   width: 60px;
   height: 60px;
   background-color: #ffffff;
   border-radius: 100% 0% 70% 30% / 100% 100% 0% 0%;
-  z-index: 2;
+  z-index: 999;
   gap: 10px;
   flex-direction: column;
   display: flex;
