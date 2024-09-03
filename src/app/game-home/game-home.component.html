@@ -1,1 +1,40 @@
-<app-header [isHome]="true"/>
+<div class="container-medium center-block">
+  @if (!start) {
+  <div class="settings" [ngClass]="{ appear: !start }">
+    <app-game-setting
+      (isBotBegin)="getIfBotBeginSetting($event)"
+      (tileColor)="getUserTileColor($event)"
+      (start)="startTheGame($event)"
+    />
+  </div>
+  } @if (start) { @if (initRound) {
+  <h1 class="white center-block">
+    <span>Round {{ round }}</span>
+  </h1>
+  } @else {
+  <div class="score center-block flex-column">
+    <h4 class="white">ROUND</h4>
+    <app-game-score
+      [round]="round"
+      [gameScore]="gameScore"
+      [winnerColor]="winnerColor"
+    />
+  </div>
+
+  <div class="game">
+    @if(winner != null) {
+    <h1 class="white">
+      <span>{{ winner != null ? winner + " wins" : "It's a draw" }}</span>
+    </h1>
+    }
+    <app-game-board
+      [turn]="isBotBegin"
+      [userColor]="gameScore[0].color"
+      [botColor]="gameScore[1].color"
+      (botScore)="setBotScore($event)"
+      (userScore)="setUserScore($event)"
+      (isGameOver)="gameOver($event)"
+    />
+  </div>
+  } }
+</div>

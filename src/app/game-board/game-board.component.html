@@ -1,50 +1,40 @@
-<app-header [isHome]="false" />
-<div class="board container d-flex">
-  <div class="round">
-    <h1 class="white">Round</h1>
-    <h4 class="white">{{ round }} / 3</h4>
-    @if(win.gameOver) { @if (round+1 < 4) {
-    <button (click)="nextRound()" class="btn white">Next</button>
-    } @else {
-    <button (click)="restartGame()" class="btn white">Restart</button>
-    } }
-  </div>
+<div class="board">
   <div class="center-block flex-column">
-    <div class="game">
-      @if(!win.gameOver) { @for (item of grid; track $index; let i = $index) {
+    <div class="game" [ngClass]="{ disable: disabledBoard }">
+      @for (item of grid; track $index; let i = $index) {
       <div class="lines center-block">
-        @for (content of item; track $index) {
+        @for (content of item; track $index) { @if (!disabledBoard) {
         <div class="cols rounded" (click)="addTile($index)">
           <div
             class="tile rounded"
             [ngClass]="{
               red: grid[i][$index] == 'red',
-              yellow: grid[i][$index] == 'yellow'
+              yellow: grid[i][$index] == 'yellow',
+              blue: grid[i][$index] == 'blue',
+              white: grid[i][$index] == 'white',
+              green: grid[i][$index] == 'green',
             }"
           ></div>
         </div>
-        }
+        } @else {
+        <div class="cols rounded">
+          <div
+            class="tile rounded"
+            [ngClass]="{
+              red: grid[i][$index] == 'red',
+              yellow: grid[i][$index] == 'yellow',
+              blue: grid[i][$index] == 'blue',
+              white: grid[i][$index] == 'white',
+              green: grid[i][$index] == 'green',
+            }"
+          ></div>
+        </div>
+        } }
       </div>
-      } } @else { @if (round+1 < 4) { @if (win.winner == "red" || win.winner ==
-      "yellow") {
-      <h1 class="white">{{ win.winner }} wins</h1>
-      }@else {
-      <h1 class="white">It's a draw</h1>
-      } } @else { @if (botScore > userScore) {
-      <h1 class="white">The BOT wins</h1>
-      }@else if (userScore > botScore){
-      <h1 class="white">YOU wins</h1>
-      }@else {
-      <h1 class="white">It's a draw</h1>
-      } } }
+      }
     </div>
     @if (!turn) {
     <p class="white">It's your turn now</p>
     }
-  </div>
-  <div class="score">
-    <h1 class="white">Score</h1>
-    <h4 class="white">You : {{ userScore }}</h4>
-    <h4 class="white">IA : {{ botScore }}</h4>
   </div>
 </div>

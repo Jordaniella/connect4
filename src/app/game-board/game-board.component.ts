@@ -1,68 +1,37 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
 import { HeaderComponent } from '../header/header.component';
 import { NgClass } from '@angular/common';
 import { Minimax } from '../../utils/minimax';
+import { GameSettingComponent } from '../game-setting/game-setting.component';
 
 @Component({
   selector: 'app-game-board',
   standalone: true,
-  imports: [HeaderComponent, NgClass],
+  imports: [HeaderComponent, NgClass, GameSettingComponent],
   templateUrl: './game-board.component.html',
   styleUrl: './game-board.component.scss',
 })
 export class GameBoardComponent implements OnInit {
-  userScore: number = 0;
-  botScore: number = 0;
-  round: number = 1;
-  grid: ('red' | 'yellow' | null)[][] = [];
+  @Output() userScore: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Output() botScore: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Output() round: EventEmitter<number> = new EventEmitter<number>();
+  @Output() isGameOver: EventEmitter<string> = new EventEmitter<string>();
+
+  @Input() userColor: Tile = 'red';
+  @Input() botColor: Tile = 'yellow';
+
+  grid: (Tile | null)[][] = [];
   // Determine le tour, quand turn = false, c'est l'user qui commence
-  turn: boolean = false;
+  @Input() turn: boolean = false;
   totalTokens: number = 0; // Compteur pour suivre le nombre de jetons placés
   win: {
     gameOver: boolean;
-    winner: ('red' | 'yellow' | null) | 'draw' | null;
+    winner: Tile | 'draw' | null;
   } = {
     gameOver: false,
     winner: null,
   };
-
-  /**
-   * Crée une matrice de dimensions spécifiées, initialisée à `null`.
-   * Chaque cellule représente l'état d'une position dans le jeu qui peut être `red`, `yellow` ou `null` pour vide.
-   *
-   * @param lines - Nombre de lignes de la matrice.
-   * @param cols - Nombre de colonnes de la matrice.
-   * @returns Une matrice [lines x cols] où chaque cellule est initialisée à `null`.
-   */
-  restartGame = () => {
-    this.grid = this.createEmptyGrid(6, 7);
-    this.win = {
-      gameOver: false,
-      winner: null,
-    };
-    this.turn = false;
-    this.botScore = 0;
-    this.userScore = 0;
-    this.round = 1;
-    this.totalTokens = 0;
-  };
-  nextRound = () => {
-    if (this.round + 1 < 4) {
-      this.win = {
-        gameOver: false,
-        winner: null,
-      };
-      this.round++;
-    } else {
-      this.win = {
-        gameOver: true,
-        winner: this.botScore > this.userScore ? 'red' : 'yellow',
-      };
-    }
-    this.turn = false;
-    this.grid = this.createEmptyGrid(6, 7);
-    this.totalTokens = 0;
-  };
+  disabledBoard: boolean = false;
   createEmptyGrid = (lines: number, cols: number): null[][] => {
     return Array.from({ length: lines }, () => new Array(cols).fill(null));
   };
@@ -101,23 +70,24 @@ export class GameBoardComponent implements OnInit {
     let miniMax = new Minimax();
     if (index >= 0) {
       // Ajouter le jeton dans la cellule libre trouvée
-      this.grid[index][col] = this.turn ? 'red' : 'yellow';
+      this.grid[index][col] = this.turn ? this.botColor : this.userColor;
       // Changer le tour après l'ajout du jeton
       this.turn = !this.turn;
       this.totalTokens++; // Incrémenter le compteur de jetons chaque fois qu'un jeton est ajouté
       if (this.checkGridFull()) {
         this.win = miniMax.isTerminal(this.grid);
-        console.log("C'est plein");
+        this.setGameOver();
       } else {
         let nextmove: number | null;
         if (this.turn) {
           nextmove = miniMax.minimaxWithAlphaBeta(
             this.grid,
-            4,
+            5,
             -Infinity,
             Infinity,
             true,
-            'red'
+            this.botColor,
+            this.userColor
           ).move;
 
           if (nextmove != null) {
@@ -132,12 +102,23 @@ export class GameBoardComponent implements OnInit {
     }
     this.win = miniMax.isTerminal(this.grid);
     if (this.win !== null) {
-      if (this.win.winner == 'red') this.botScore++;
-      else if (this.win.winner == 'yellow') this.userScore++;
+      if (this.win.winner == this.botColor) this.botScore.emit(true);
+      else if (this.win.winner == this.userColor) this.userScore.emit(true);
+      this.setGameOver();
     }
   };
 
+  setGameOver = () => {
+    if (this.win.winner != null) {
+      this.disabledBoard = true;
+      this.isGameOver.emit(this.win.winner);
+    }
+  };
   ngOnInit(): void {
+    this.disabledBoard = false;
     this.grid = this.createEmptyGrid(6, 7);
+    if (this.turn) this.addTile(3);
   }
 }
+
+type Tile = 'red' | 'yellow' | 'green' | 'white' | 'blue';
