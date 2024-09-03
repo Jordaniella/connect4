@@ -1,6 +1,47 @@
-<app-header [isHome]="false" />
-<div class="container">
-  <div class="content">
-    <h4 class="white">Background Color:</h4>
+<div class="medium-container">
+  <div class="content flex-column d-flex is-between">
+    <h4 class="white">Settings:</h4>
+    <div class="card center-block">
+      <span class="white">Bot start</span>
+      <input
+        type="checkbox"
+        name=""
+        id="switch"
+        (change)="beginnerOfTheGame($event)"
+      />
+      <label for="switch" class="button"></label>
+    </div>
+    <div class="card center-block flex-column">
+      <span class="white">Choose your tile color</span>
+      <div class="all-colors">
+        @for (item of allColors; track $index) {
+        <div
+          class="item"
+          [ngClass]="{
+            red: item.name == 'red',
+            blue: item.name == 'blue',
+            yellow: item.name == 'yellow',
+            green: item.name == 'green',
+            white: item.name == 'white',
+            active: item.isActive
+          }"
+          (click)="changeTileColor(item.name)"
+        ></div>
+        }
+      </div>
+    </div>
+    <div
+      class="btn center-block"
+      [ngClass]="{
+        red: btnColor == 'red',
+        blue: btnColor == 'blue',
+        yellow: btnColor == 'yellow',
+        green: btnColor == 'green',
+        white: btnColor == 'white',
+      }"
+      (click)="startGame()"
+    >
+      <span class="white center-block">START</span>
+    </div>
   </div>
 </div>

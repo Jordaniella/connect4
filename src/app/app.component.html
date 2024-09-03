@@ -1,31 +1,19 @@
-<main
-  class="main"
-  [ngClass]="{
-    green: bgColor == 'green',
-    'yellow-pink': bgColor == 'yellow-pink',
-    blue: bgColor == 'blue',
-    'blue-pink': bgColor == 'blue-pink',
-    normal: bgColor == 'normal',
-    dark: bgColor == 'dark'
-  }"
->
-  <router-outlet></router-outlet>
-  <label for="hideCard"></label>
-  <input type="checkbox" name="" id="hideCard" />
-  <div class="card">
-    @for (item of allColors; track $index) {
-    <div
-      class="item"
-      [ngClass]="{
-        green: item == 'green',
-        'yellow-pink': item == 'yellow-pink',
-        blue: item == 'blue',
-        'blue-pink': item == 'blue-pink',
-        normal: item == 'normal',
-        dark: item == 'dark'
-      }"
-      (click)="selectNewBgColor(item)"
-    ></div>
-    }
+<main class="main {{ bgColor }}">
+  <div class="d-flex flex-column content">
+    <app-header />
+    <router-outlet></router-outlet>
+    <input type="checkbox" name="" id="hideCard" />
+    <label for="hideCard" class="button">
+      <span></span>
+      <span></span>
+    </label>
+    <div class="center-block flex-column">
+      <span>Change background</span>
+      <div class="card">
+        @for (item of allColors; track $index) {
+        <div class="item {{ item }}" (click)="selectNewBgColor(item)"></div>
+        }
+      </div>
+    </div>
   </div>
 </main>

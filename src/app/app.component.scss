@@ -1,16 +1,21 @@
 .main,
 .item {
+  &:hover {
+    cursor: pointer;
+  }
+  box-shadow: -3px -2px 1px rgba($color: #ffffff, $alpha: 0.178) inset,
+    3px 2px 1px rgba($color: #000000, $alpha: 0.1) inset;
   &.green {
     background: linear-gradient(45deg, #0097b2, #7ed957);
   }
   &.blue {
-    background: linear-gradient(45deg, #5dee, #004aad);
+    background: linear-gradient(45deg, #004aad, #5dee);
   }
   &.yellow-pink {
-    background: linear-gradient(45deg, #fbd447, #e22962);
+    background: linear-gradient(45deg, #e22962, #fbd447);
   }
   &.blue-pink {
-    background: linear-gradient(45deg, #cb6be6, #004aad);
+    background: linear-gradient(45deg, #004aad, #cb6be6);
   }
   &.normal {
     background: linear-gradient(45deg, #ff5757, #8c52ff);
@@ -19,32 +24,37 @@
     background: linear-gradient(45deg, #451336, #004767);
   }
 }
-.main {
+.main,
+.content {
   min-height: 100vh;
 }
-.card {
+.content {
+  padding: 40px;
+  gap: 2em;
+}
+.center-block.flex-column {
   position: fixed;
   bottom: 0;
   right: 0;
   width: clamp(200px, 100%, 300px);
-  background: rgba(255, 255, 255, 0.6);
-  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
+  background: #ffffff;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 20px;
   padding: 1.5rem;
+  transform-origin: bottom right;
+  transform: scale(0);
+  transition: transform 500ms ease;
+}
+.card {
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 30px;
   flex-wrap: wrap;
-  transform: scale(0);
-  transition: transform 500ms cubic-bezier(0.39, 0.575, 0.565, 1);
-  transform-origin: bottom right;
+  margin-top: 20px;
 }
-label {
+.button {
   position: absolute;
   bottom: 0;
   right: 0;
@@ -53,6 +63,21 @@ label {
   background-color: #ffffff;
   border-radius: 100% 0% 70% 30% / 100% 100% 0% 0%;
   z-index: 2;
+  gap: 10px;
+  flex-direction: column;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  padding-bottom: 10px;
+  padding-right: 10px;
+  span {
+    width: 50%;
+    height: 3px;
+    background: #000000;
+    display: block;
+    transform: rotate(0) translate(0, 0);
+    transition: transform 300ms ease;
+  }
   &:hover {
     cursor: pointer;
   }
@@ -60,7 +85,15 @@ label {
 input {
   display: none;
 }
-input:checked + .card {
+input:checked + .button {
+  span:first-child {
+    transform: rotate(45deg) translate(2px, 5px);
+  }
+  span:last-child {
+    transform: rotate(-45deg) translate(4px, -8px);
+  }
+}
+input:checked ~ .center-block {
   transform: scale(1);
 }
 .item {

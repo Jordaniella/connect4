@@ -1,0 +1,39 @@
+<!-- 
+  <div class="flex-column">
+    <div class="round">
+      <h1 class="white">Round</h1>
+      <h4 class="white">{{ round }} / 3</h4>
+      @if(win.gameOver) { @if (round+1 < 4) {
+      <button (click)="nextRound()" class="btn white">Next</button>
+      } @else {
+      <button (click)="restartGame()" class="btn white">Restart</button>
+      } }
+    </div>
+    <div class="score">
+      <h1 class="white">Score</h1>
+      <h4 class="white">You : {{ userScore }}</h4>
+      <h4 class="white">IA : {{ botScore }}</h4>
+    </div>
+  </div> -->
+<div class="container-medium d-flex is-align-center">
+  <div class="round">
+    <div class="outer center-block">
+      <div class="white level bg-outer"></div>
+      <div class="level level2 {{ winnerColor[1] }}"></div>
+      <div class="level level1 {{ winnerColor[0] }}"></div>
+      <div class="level level3 {{ winnerColor[2] }}"></div>
+      <div class="inner center-block">
+        <span>{{ round }}/3</span>
+      </div>
+    </div>
+  </div>
+  <div class="score">
+    @for (item of gameScore; track $index) {
+    <div class="item">
+      <span>{{ item.name }}</span>
+      <div class="color {{ item.color }}"></div>
+      <div class="number center-block">{{ item.score }}</div>
+    </div>
+    }
+  </div>
+</div>

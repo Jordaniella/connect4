@@ -3,6 +3,8 @@ type MinimaxResult = {
   move: number | null; // Le coup (la colonne) associé au score optimal
 };
 
+type Tile = 'red' | 'yellow' | 'green' | 'white' | 'blue';
+
 export class Minimax {
   /**
    * Détermine le joueur opposé.
@@ -10,9 +12,9 @@ export class Minimax {
    * @param currentPlayer Le joueur actuel.
    * @returns Le joueur opposé.
    */
-  opponent(currentPlayer: 'red' | 'yellow'): 'red' | 'yellow' {
-    return currentPlayer === 'red' ? 'yellow' : 'red';
-  }
+  // opponent(currentPlayer: Tile): Tile {
+  //   return currentPlayer === 'red' ? 'yellow' : 'red';
+  // }
 
   /**
    * Compte le nombre de jetons pour un joueur spécifique dans une séquence donnée.
@@ -21,10 +23,7 @@ export class Minimax {
    * @param player Le joueur pour lequel compter les jetons.
    * @returns Le nombre de jetons appartenant au joueur spécifié dans la séquence.
    */
-  countTokens(
-    tokens: ('red' | 'yellow' | null)[],
-    player: 'red' | 'yellow' | null
-  ): number {
+  countTokens(tokens: (Tile | null)[], player: Tile | null): number {
     return tokens.filter((token) => token === player).length;
   }
 
@@ -34,10 +33,8 @@ export class Minimax {
    * @param board La grille de jeu.
    * @returns Une liste de toutes les séquences de quatre jetons en ligne.
    */
-  allPossibleFourInARows(
-    board: ('red' | 'yellow' | null)[][]
-  ): ('red' | 'yellow' | null)[][] {
-    let sequences: ('red' | 'yellow' | null)[][] = [];
+  allPossibleFourInARows(board: (Tile | null)[][]): (Tile | null)[][] {
+    let sequences: (Tile | null)[][] = [];
 
     const rows = board.length;
     const cols = board[0].length;
@@ -100,11 +97,12 @@ export class Minimax {
    * @returns Le score heuristique basé sur l'état actuel de la grille.
    */
   heuristicEval(
-    board: ('red' | 'yellow' | null)[][],
-    player: 'red' | 'yellow'
+    board: (Tile | null)[][],
+    player: Tile,
+    opponentPlayer: Tile
   ): number {
     let score = 0;
-    const opponent = this.opponent(player);
+    const opponent = opponentPlayer;
     const groups = this.allPossibleFourInARows(board);
 
     // Favoriser les positions centrales
@@ -161,7 +159,7 @@ export class Minimax {
     return score;
   }
 
-  copyBoard = (board: ('red' | 'yellow' | null)[][]) => {
+  copyBoard = (board: (Tile | null)[][]) => {
     return board.map((row) => [...row]); // Crée une copie profonde de la grille
   };
   /**
@@ -182,10 +180,7 @@ export class Minimax {
    *
    * Cette méthode est utile pour les algorithmes de recherche comme Minimax, où chaque possibilité doit être explorée pour prendre la meilleure décision stratégique.
    */
-  generateNewBoards = (
-    board: ('red' | 'yellow' | null)[][],
-    currentPlayer: 'red' | 'yellow'
-  ) => {
+  generateNewBoards = (board: (Tile | null)[][], currentPlayer: Tile) => {
     let newBoards = [];
     for (let col = 0; col < board[0].length; col++) {
       if (board[0][col] === null) {
@@ -210,10 +205,10 @@ export class Minimax {
    * @returns Un objet contenant le statut de fin de jeu et le gagnant s'il y en a un.
    */
   isTerminal = (
-    board: ('red' | 'yellow' | null)[][]
+    board: (Tile | null)[][]
   ): {
     gameOver: boolean;
-    winner: ('red' | 'yellow' | null) | 'draw' | null;
+    winner: (Tile | null) | 'draw' | null;
   } => {
     // Vérifier les quatre alignements dans toutes les directions
     const directions = [
@@ -274,7 +269,7 @@ export class Minimax {
    * @returns L'indice de la première rangée vide dans la colonne, ou -1 si la colonne est pleine.
    */
   findFirstEmptyRowInColumn(
-    board: ('red' | 'yellow' | null)[][],
+    board: (Tile | null)[][],
     colIndex: number
   ): number {
     if (colIndex < 0) {
@@ -294,83 +289,19 @@ export class Minimax {
     }
     return -1; // Retourne -1 si la colonne est pleine.
   }
-  /**
-   * Fonction Minimax avec élagage alpha-bêta pour évaluer les meilleurs coups possibles dans le jeu Connect 4.
-   *
-   * @param board - La grille actuelle du jeu.
-   * @param depth - La profondeur maximale de recherche.
-   * @param alpha - La meilleure valeur déjà disponible pour le maximiseur le long du chemin vers la racine.
-   * @param beta - La meilleure valeur déjà disponible pour le minimiseur le long du chemin vers la racine.
-   * @param isMaximizingPlayer - Booléen indiquant si le joueur actuel est le maximiseur.
-   * @param currentPlayer - Le joueur ('red' ou 'yellow') qui joue actuellement.
-   *
-   * @returns La valeur heuristique du nœud évalué.
-   */
-  // minimaxWithAlphaBeta = (
-  //   board: ('red' | 'yellow' | null)[][],
-  //   depth: number,
-  //   alpha: number,
-  //   beta: number,
-  //   isMaximizingPlayer: boolean,
-  //   currentPlayer: 'red' | 'yellow'
-  // ): number => {
-  //   // If fin de la profondeur ou que la grille est déjà en gameOver
-  //   if (depth === 0 || this.isTerminal(board).gameOver) {
-  //     return this.heuristicEval(board, currentPlayer);
-  //   }
-
-  //   let newBoards = this.generateNewBoards(board, currentPlayer);
-  //   // Quand le noeud est max
-  //   if (currentPlayer === 'red') {
-  //     for (let i = 0; i < newBoards.length; i++) {
-  //       alpha = Math.max(
-  //         alpha,
-  //         this.minimaxWithAlphaBeta(
-  //           newBoards[i],
-  //           depth - 1,
-  //           alpha,
-  //           beta,
-  //           false,
-  //           'yellow'
-  //         )
-  //       );
-  //       if (alpha >= beta) {
-  //         return alpha;
-  //       }
-  //     }
-  //     return alpha;
-  //   }
-  //   // Quand le noeud est min
-  //   else {
-  //     for (let i = 0; i < newBoards.length; i++) {
-  //       beta = Math.min(
-  //         beta,
-  //         this.minimaxWithAlphaBeta(
-  //           newBoards[i],
-  //           depth - 1,
-  //           alpha,
-  //           beta,
-  //           true,
-  //           'red'
-  //         )
-  //       );
-  //       if (beta <= alpha) return beta;
-  //     }
-  //     return beta;
-  //   }
-  // };
   minimaxWithAlphaBeta = (
-    board: ('red' | 'yellow' | null)[][],
+    board: (Tile | null)[][],
     depth: number,
     alpha: number,
     beta: number,
     isMaximizingPlayer: boolean,
-    currentPlayer: 'red' | 'yellow'
+    currentPlayer: Tile,
+    opponentPlayer: Tile
   ): MinimaxResult => {
     // Si fin de la profondeur ou que la grille est déjà en gameOver
     if (depth === 0 || this.isTerminal(board).gameOver) {
       return {
-        score: this.heuristicEval(board, currentPlayer),
+        score: this.heuristicEval(board, currentPlayer, opponentPlayer),
         move: null, // Pas de mouvement associé ici, car c'est une évaluation finale
       };
     }
@@ -396,7 +327,8 @@ export class Minimax {
             alpha,
             beta,
             false,
-            this.opponent(currentPlayer)
+            opponentPlayer,
+            currentPlayer
           );
 
           if (result.score > maxEval) {
@@ -427,7 +359,8 @@ export class Minimax {
             alpha,
             beta,
             true,
-            this.opponent(currentPlayer)
+            opponentPlayer,
+            currentPlayer
           );
 
           if (result.score < minEval) {
