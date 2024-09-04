@@ -102,3 +102,11 @@ input:checked ~ .center-block {
   height: 50px;
   border-radius: 50%;
 }
+.copyright {
+  position: absolute;
+  bottom: 20px;
+  left: 45%;
+  @media (width < 980px)  {
+    left: min(12em, 30%);
+  }
+}
