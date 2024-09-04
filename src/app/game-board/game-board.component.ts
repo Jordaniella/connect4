@@ -12,8 +12,7 @@ import { GameSettingComponent } from '../game-setting/game-setting.component';
   styleUrl: './game-board.component.scss',
 })
 export class GameBoardComponent implements OnInit {
-  @Output() userScore: EventEmitter<boolean> = new EventEmitter<boolean>();
-  @Output() botScore: EventEmitter<boolean> = new EventEmitter<boolean>();
+  @Output() gameScore: EventEmitter<number> = new EventEmitter<number>();;
   @Output() round: EventEmitter<number> = new EventEmitter<number>();
   @Output() isGameOver: EventEmitter<string> = new EventEmitter<string>();
 
@@ -60,53 +59,65 @@ export class GameBoardComponent implements OnInit {
   };
 
   /**
-   * Ajoute un jeton dans la colonne spécifiée de la grille. Le jeton est coloré en fonction du joueur actuel.
-   * @param line - La ligne dans laquelle ajouter le jeton.
-   * @param col - La colonne dans laquelle ajouter le jeton.
-   */
-  addTile = (col: number) => {
-    // Trouver le premier emplacement libre dans la colonne
-    let index = this.getFirstAvailableRow(col);
-    let miniMax = new Minimax();
-    if (index >= 0) {
-      // Ajouter le jeton dans la cellule libre trouvée
-      this.grid[index][col] = this.turn ? this.botColor : this.userColor;
-      // Changer le tour après l'ajout du jeton
-      this.turn = !this.turn;
-      this.totalTokens++; // Incrémenter le compteur de jetons chaque fois qu'un jeton est ajouté
-      if (this.checkGridFull()) {
-        this.win = miniMax.isTerminal(this.grid);
-        this.setGameOver();
-      } else {
-        let nextmove: number | null;
-        if (this.turn) {
-          nextmove = miniMax.minimaxWithAlphaBeta(
-            this.grid,
-            5,
-            -Infinity,
-            Infinity,
-            true,
-            this.botColor,
-            this.userColor
-          ).move;
+ * Ajoute un jeton dans la colonne spécifiée de la grille. Le jeton est coloré en fonction du joueur actuel.
+ * @param col - La colonne dans laquelle ajouter le jeton.
+ */
+addTile = (col: number) => {
+  if (this.disabledBoard) {
+    return;
+  }
+  // Trouver le premier emplacement libre dans la colonne
+  let index = this.getFirstAvailableRow(col);
+  let miniMax = new Minimax();
 
-          if (nextmove != null) {
-            setTimeout(() => {
-              if (nextmove != null) {
-                this.addTile(nextmove);
-              }
-            }, 300);
+  if (index >= 0) {
+    // Désactiver la grille pendant que le bot joue
+    this.disabledBoard = true;
+
+    // Ajouter le jeton dans la cellule libre trouvée
+    this.grid[index][col] = this.turn ? this.botColor : this.userColor;
+
+    // Changer le tour après l'ajout du jeton
+    this.turn = !this.turn;
+    this.totalTokens++; // Incrémenter le compteur de jetons chaque fois qu'un jeton est ajouté
+
+    // Vérifier si la grille est pleine
+    if (this.checkGridFull()) {
+      this.win = miniMax.isTerminal(this.grid);
+      this.setGameOver();
+    } else {
+      let nextmove: number | null;
+      if (this.turn) {
+        nextmove = miniMax.minimaxWithAlphaBeta(
+          this.grid,
+          5,
+          -Infinity,
+          Infinity,
+          true,
+          this.botColor,
+          this.userColor
+        ).move;
+
+          setTimeout(() => {
+            if (nextmove != null) {
+            this.disabledBoard = false;
+            this.addTile(nextmove);
           }
-        }
+          }, 300);
+      } else {
+        this.disabledBoard = false;
       }
     }
-    this.win = miniMax.isTerminal(this.grid);
-    if (this.win !== null) {
-      if (this.win.winner == this.botColor) this.botScore.emit(true);
-      else if (this.win.winner == this.userColor) this.userScore.emit(true);
-      this.setGameOver();
-    }
-  };
+  }
+
+  // Vérifier si la partie est terminée après l'ajout d'un jeton
+  this.win = miniMax.isTerminal(this.grid);
+  if (this.win !== null) {
+    if (this.win.winner == this.botColor) this.gameScore.emit(1);
+    else if (this.win.winner == this.userColor) this.gameScore.emit(0);
+    this.setGameOver();
+  }
+};
 
   setGameOver = () => {
     if (this.win.winner != null) {
