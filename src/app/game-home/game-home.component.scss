@@ -43,3 +43,79 @@ h1.white.center-block {
 .game {
   min-height: 200px;
 }
+
+.btn {
+  position: relative;
+  width: 155px;
+  height: 50px;
+  margin: 20px;
+  align-self: center;
+  &:before,
+  span:before,
+  &:after {
+    content: "";
+    position: absolute;
+  }
+  &:before,
+  &:after {
+    width: 30px;
+    height: 10px;
+    left: 50%;
+    transform: translateX(-50%) scale(1, 1);
+    box-shadow: 0 0 5px var(--primary), 0 0 15px var(--primary),
+      0 0 60px var(--primary);
+    background: var(--primary);
+    border-radius: 10px;
+    transition: transform 500ms ease;
+  }
+  &:before {
+    top: -5px;
+  }
+  &:after {
+    bottom: -5px;
+  }
+  span {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    background: rgba($color: #ffffff, $alpha: 0.05);
+    box-shadow: 0 15px 35px rgba($color: #000000, $alpha: 0.2);
+    border: rgba($color: #d2d2d2, $alpha: 0.1) none;
+    border-radius: 30px;
+    z-index: 10;
+    backdrop-filter: blur(15px);
+    overflow: hidden;
+    &:before {
+      width: 50%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      background: linear-gradient(
+        to left,
+        rgba($color: #ffffff, $alpha: 0.35),
+        transparent
+      );
+      transform: skewX(45deg) translateX(0);
+      transition: transform 500ms ease;
+    }
+  }
+  &:hover {
+    cursor: pointer;
+    &::before {
+      top: 0;
+    }
+    &:after {
+      bottom: 0;
+    }
+    &:before,
+    &:after {
+      transform: translate(-50%) scale(3, 1.5);
+    }
+    span {
+      letter-spacing: 3px;
+      &:before {
+        transform: skewX(45deg) translateX(200%);
+      }
+    }
+  }
+}

@@ -36,6 +36,7 @@ export class GameHomeComponent {
   round: number = 1;
   winner: string | null = null;
   initRound: boolean = false;
+  endGame: boolean = false;
   winnerColor: string[] = ['white', 'white', 'white'];
   getIfBotBeginSetting = (choice: boolean) => (this.isBotBegin = choice);
   getUserTileColor = (choice: Tile) => {
@@ -51,53 +52,55 @@ export class GameHomeComponent {
       this.initRound = false;
     }, 3000);
   };
-  setBotScore = (gain: boolean) => {
-    this.gameScore[1].score++;
-  };
-  setUserScore = (gain: boolean) => {
-    this.gameScore[0].score++;
+  setGameScore = (index: number) => {
+    this.gameScore[index].score++;
   };
   gameOver = (value: string) => {
     if (this.round < 3) {
+      if (
+        this.round == 2 &&
+        (this.gameScore[1].score == 2 || this.gameScore[0].score == 2)
+      ) {
+        this.winner = this.gameScore[0].score == 2 ? 'The BOT' : 'YOU';
+        this.endGame = true
+        setTimeout(() => this.endTheGame, 3000);
+      } 
+      else {
+        setTimeout(() => {
+          this.round++;
+          this.reInitBoard();
+        }, 5000);}
+        
       if (value != 'draw') {
         this.winnerColor[this.round - 1] = value;
         this.winner = value == this.gameScore[0].color ? 'YOU' : 'The BOT';
       } else {
         this.winner = value;
       }
-      setTimeout(() => {
-        this.round++;
-        this.reInitBoard();
-      }, 6000);
-    } else if (
-      this.round == 2 &&
-      (this.gameScore[1].score == 2 || this.gameScore[0].score == 2)
-    ) {
-      this.winner = this.gameScore[0].score == 2 ? 'The BOT' : 'YOU';
-      setTimeout(() => {
-        this.start = false;
-        this.reInitBoard();
-        this.round = 1;
-        this.gameScore.forEach((element) => {
-          element.score = 0;
-        });
-        this.winnerColor = ['white', 'white', 'white'];
-      }, 3000);
     } else {
       if (value != 'draw') this.winnerColor[this.round - 1] = value;
       this.winner =
         this.gameScore[0].score < this.gameScore[1].score ? 'The BOT' : 'YOU';
-      setTimeout(() => {
-        this.start = false;
-        this.reInitBoard();
-        this.round = 1;
-        this.gameScore.forEach((element) => {
-          element.score = 0;
-        });
-        this.winnerColor = ['white', 'white', 'white'];
-      }, 3000);
+        this.endGame = true
+      setTimeout(() => this.endTheGame, 3000);
     }
+    if (this.round > 3) this.restartGame()
   };
+restartGame = () => {
+  this.start = false
+  this.endGame = false
+  this.round = 1;
+  this.endTheGame()
+}
+  endTheGame = () => {
+    this.winner = null;
+    this.isBotBegin = false;
+    this.gameScore.forEach((element) => {
+      element.score = 0;
+    });
+    this.endGame = false
+    this.winnerColor = ['white', 'white', 'white'];
+  }
   reInitBoard = () => {
     this.winner = null;
     this.isBotBegin = !this.isBotBegin;
