@@ -12,6 +12,7 @@ Play Now!
 
 Beautiful User Interface: Enjoy a visually appealing and intuitive interface that makes gameplay smooth and enjoyable.
 Challenging AI: Our AI opponent is designed to be competitive, providing a challenging experience for players of all skill levels.
+Difficulty levels: Choose between Beginner, Intermediate, Hard, and Expert AI tiers before starting a match.
 Cross-Platform: Play on any device with a web browser, no downloads or installations required.
 
 ## 🌟 Contribute
@@ -63,7 +64,7 @@ Suggest or implement changes to make the interface even more user-friendly.
 
 ### New Features:
 
-    Add exciting features like multiplayer mode, different difficulty levels, or game analytics.
+    Add exciting features like multiplayer mode, game analytics, or extra AI personalities on top of the existing difficulty levels.
 
 ### Bug Fixes:
 

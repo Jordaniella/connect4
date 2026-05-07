@@ -30,6 +30,22 @@
         }
       </div>
     </div>
+    <div class="card center-block flex-column difficulty-card">
+      <span class="white">Choose the bot level</span>
+      <div class="difficulty-list">
+        @for (level of difficultyLevels; track level.value) {
+        <button
+          type="button"
+          class="difficulty-option"
+          [ngClass]="{ active: selectedDifficulty == level.value }"
+          (click)="changeDifficulty(level.value)"
+        >
+          <strong>{{ level.label }}</strong>
+          <small>{{ level.description }}</small>
+        </button>
+        }
+      </div>
+    </div>
     <div
       class="btn center-block"
       [ngClass]="{

@@ -4,6 +4,7 @@
     <app-game-setting
       (isBotBegin)="getIfBotBeginSetting($event)"
       (tileColor)="getUserTileColor($event)"
+      (difficultyChange)="setDifficulty($event)"
       (start)="startTheGame($event)"
     />
   </div>
@@ -23,7 +24,7 @@
     <div class="game">
       @if(winner != null) {
       <h1 class="white">
-        <span>{{ winner != null ? winner + " wins" : "It's a draw" }}</span>
+        <span>{{ winner == "draw" ? "It's a draw" : winner + " wins" }}</span>
       </h1>
       }
     
@@ -32,6 +33,7 @@
         [turn]="isBotBegin"
         [userColor]="gameScore[0].color"
         [botColor]="gameScore[1].color"
+        [difficulty]="difficulty"
         (gameScore)="setGameScore($event)"
         (isGameOver)="gameOver($event)"
       />}

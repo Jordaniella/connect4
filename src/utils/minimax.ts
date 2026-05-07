@@ -1,27 +1,33 @@
-type MinimaxResult = {
+export type Tile = 'red' | 'yellow' | 'green' | 'white' | 'blue';
+export type AiDifficulty = 'easy' | 'medium' | 'hard' | 'expert';
+
+export type MinimaxResult = {
   score: number;
-  move: number | null; // Le coup (la colonne) associé au score optimal
+  move: number | null;
 };
 
-type Tile = 'red' | 'yellow' | 'green' | 'white' | 'blue';
+export type TerminalState = {
+  gameOver: boolean;
+  winner: Tile | 'draw' | null;
+};
+
+type CandidateMove = {
+  col: number;
+  score: number;
+};
+
+const DIFFICULTY_DEPTH: Record<AiDifficulty, number> = {
+  easy: 1,
+  medium: 3,
+  hard: 5,
+  expert: 7,
+};
+
+const WIN_SCORE = 1_000_000;
 
 export class Minimax {
   /**
-   * Détermine le joueur opposé.
-   *
-   * @param currentPlayer Le joueur actuel.
-   * @returns Le joueur opposé.
-   */
-  // opponent(currentPlayer: Tile): Tile {
-  //   return currentPlayer === 'red' ? 'yellow' : 'red';
-  // }
-
-  /**
    * Compte le nombre de jetons pour un joueur spécifique dans une séquence donnée.
-   *
-   * @param tokens La séquence de jetons à analyser.
-   * @param player Le joueur pour lequel compter les jetons.
-   * @returns Le nombre de jetons appartenant au joueur spécifié dans la séquence.
    */
   countTokens(tokens: (Tile | null)[], player: Tile | null): number {
     return tokens.filter((token) => token === player).length;
@@ -29,17 +35,12 @@ export class Minimax {
 
   /**
    * Génère toutes les séquences possibles de quatre jetons en ligne sur la grille.
-   *
-   * @param board La grille de jeu.
-   * @returns Une liste de toutes les séquences de quatre jetons en ligne.
    */
   allPossibleFourInARows(board: (Tile | null)[][]): (Tile | null)[][] {
-    let sequences: (Tile | null)[][] = [];
-
+    const sequences: (Tile | null)[][] = [];
     const rows = board.length;
     const cols = board[0].length;
 
-    // Horizontales
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols - 3; c++) {
         sequences.push([
@@ -51,19 +52,17 @@ export class Minimax {
       }
     }
 
-    // Verticales
     for (let c = 0; c < cols; c++) {
-      for (let r = rows - 1; r >= 3; r--) {
+      for (let r = 0; r < rows - 3; r++) {
         sequences.push([
           board[r][c],
-          board[r - 1][c],
-          board[r - 2][c],
-          board[r - 3][c],
+          board[r + 1][c],
+          board[r + 2][c],
+          board[r + 3][c],
         ]);
       }
     }
 
-    // Diagonales vers le bas à droite
     for (let r = 0; r < rows - 3; r++) {
       for (let c = 0; c < cols - 3; c++) {
         sequences.push([
@@ -75,7 +74,6 @@ export class Minimax {
       }
     }
 
-    // Diagonales vers le bas à gauche
     for (let r = 0; r < rows - 3; r++) {
       for (let c = 3; c < cols; c++) {
         sequences.push([
@@ -89,148 +87,122 @@ export class Minimax {
 
     return sequences;
   }
+
   /**
-   * Évalue la grille de Connect 4 pour un joueur donné.
-   *
-   * @param board La grille de jeu actuelle représentée comme un tableau 2D de 'red', 'yellow', ou null.
-   * @param player Le joueur actuel ('red' ou 'yellow').
-   * @returns Le score heuristique basé sur l'état actuel de la grille.
+   * Évalue une fenêtre de quatre cases en donnant plus de poids aux menaces ouvertes.
+   */
+  evaluateWindow(
+    window: (Tile | null)[],
+    botPlayer: Tile,
+    opponentPlayer: Tile
+  ): number {
+    const botTokens = this.countTokens(window, botPlayer);
+    const opponentTokens = this.countTokens(window, opponentPlayer);
+    const emptyCells = this.countTokens(window, null);
+
+    if (botTokens === 4) return 100_000;
+    if (opponentTokens === 4) return -100_000;
+    if (botTokens === 3 && emptyCells === 1) return 900;
+    if (opponentTokens === 3 && emptyCells === 1) return -1_200;
+    if (botTokens === 2 && emptyCells === 2) return 80;
+    if (opponentTokens === 2 && emptyCells === 2) return -100;
+    if (botTokens === 1 && emptyCells === 3) return 8;
+
+    return 0;
+  }
+
+  /**
+   * Évalue la grille de Connect 4 du point de vue du bot.
    */
   heuristicEval(
     board: (Tile | null)[][],
-    player: Tile,
+    botPlayer: Tile,
     opponentPlayer: Tile
   ): number {
     let score = 0;
-    const opponent = opponentPlayer;
-    const groups = this.allPossibleFourInARows(board);
-
-    // Favoriser les positions centrales
     const centerColumn = Math.floor(board[0].length / 2);
-    const centerScore =
-      this.countTokens(
-        board.map((row) => row[centerColumn]),
-        player
-      ) * 4;
-    score += centerScore;
+    const centerTokens = this.countTokens(
+      board.map((row) => row[centerColumn]),
+      botPlayer
+    );
+    score += centerTokens * 30;
 
-    // Vérifier les alignements horizontaux pour deux jetons adverses côte à côte
-    for (let row = 0; row < board.length; row++) {
-      for (let col = 0; col < board[0].length - 1; col++) {
-        if (board[row][col] === opponent && board[row][col + 1] === opponent) {
-          score -= 500; // Forte pénalité si deux jetons adverses sont côte à côte horizontalement
-        }
-      }
-    }
-
-    // Vérifier les alignements verticaux pour deux jetons adverses alignés
-    for (let col = 0; col < board[0].length; col++) {
-      for (let row = 0; row < board.length - 1; row++) {
-        if (
-          board[row][col] === opponent &&
-          board[row + 1][col] === opponent &&
-          (row === board.length - 2 || board[row + 2][col] === null) // S'assurer qu'il y a de la place pour placer un jeton ou c'est la limite de la grille
-        ) {
-          score -= 500; // Forte pénalité si deux jetons adverses sont alignés verticalement
-        }
-      }
-    }
-
-    // Évaluer les séquences de quatre jetons
-    for (const group of groups) {
-      const countPlayer = this.countTokens(group, player);
-      const countOpponent = this.countTokens(group, opponent);
-
-      if (countPlayer === 4) {
-        score += 1000; // Gagner immédiatement
-      } else if (countPlayer === 3 && countOpponent === 0) {
-        score += 100; // Menace de gagner
-      } else if (countPlayer === 2 && countOpponent === 0) {
-        score += 10; // Avantage positionnel
-      }
-
-      if (countOpponent === 3 && countPlayer === 0) {
-        score -= 100; // L'adversaire menace de gagner
-      } else if (countOpponent === 2 && countPlayer === 0) {
-        score -= 20; // Bloquer l'adversaire
-      }
+    for (const window of this.allPossibleFourInARows(board)) {
+      score += this.evaluateWindow(window, botPlayer, opponentPlayer);
     }
 
     return score;
   }
 
-  copyBoard = (board: (Tile | null)[][]) => {
-    return board.map((row) => [...row]); // Crée une copie profonde de la grille
+  copyBoard = (board: (Tile | null)[][]): (Tile | null)[][] => {
+    return board.map((row) => [...row]);
   };
+
+  getValidColumns(board: (Tile | null)[][]): number[] {
+    return board[0]
+      .map((cell, index) => (cell === null ? index : null))
+      .filter((index): index is number => index !== null);
+  }
+
+  orderColumns(board: (Tile | null)[][]): number[] {
+    const center = Math.floor(board[0].length / 2);
+    return this.getValidColumns(board).sort(
+      (first, second) => Math.abs(first - center) - Math.abs(second - center)
+    );
+  }
+
+  dropToken(
+    board: (Tile | null)[][],
+    col: number,
+    currentPlayer: Tile
+  ): (Tile | null)[][] | null {
+    if (board[0][col] !== null) return null;
+
+    const newBoard = this.copyBoard(board);
+    const row = this.findFirstEmptyRowInColumn(newBoard, col);
+
+    if (row === -1) return null;
+
+    newBoard[row][col] = currentPlayer;
+    return newBoard;
+  }
+
   /**
-   * Génère toutes les nouvelles grilles possibles résultant du placement d'un jeton par le joueur courant.
-   * Chaque grille générée reflète un état du jeu après que le joueur courant a placé un jeton dans une colonne qui n'est pas pleine.
-   *
-   * @param board - La grille actuelle du jeu, représentée comme un tableau 2D de valeurs 'red', 'yellow', ou null.
-   * @param currentPlayer - Le joueur qui doit jouer, peut être 'red' ou 'yellow'.
-   *
-   * @returns Un tableau de nouvelles grilles, chacune représentant un état de jeu possible après le coup du joueur courant.
-   *
-   * @description
-   * La fonction parcourt chaque colonne de la grille donnée pour déterminer si un coup est possible, c'est-à-dire si la colonne n'est pas pleine (la cellule en haut de la colonne est null).
-   * Pour chaque colonne où un coup est possible, la fonction:
-   * 1. Crée une copie de la grille pour éviter de modifier l'état original.
-   * 2. Place le jeton du joueur courant dans la première position libre disponible depuis le bas de cette colonne.
-   * 3. Ajoute la nouvelle grille modifiée à la liste des grilles résultantes.
-   *
-   * Cette méthode est utile pour les algorithmes de recherche comme Minimax, où chaque possibilité doit être explorée pour prendre la meilleure décision stratégique.
+   * Génère toutes les nouvelles grilles possibles pour le joueur courant avec la colonne jouée.
    */
-  generateNewBoards = (board: (Tile | null)[][], currentPlayer: Tile) => {
-    let newBoards = [];
-    for (let col = 0; col < board[0].length; col++) {
-      if (board[0][col] === null) {
-        // Vérifie si la colonne n'est pas pleine
-        let newBoard = this.copyBoard(board);
-        for (let row = board.length - 1; row >= 0; row--) {
-          if (newBoard[row][col] === null) {
-            newBoard[row][col] = currentPlayer; // Place le jeton du joueur courant
-            newBoards.push(newBoard);
-            break;
-          }
-        }
-      }
-    }
-    return newBoards;
+  generateNewBoards = (
+    board: (Tile | null)[][],
+    currentPlayer: Tile
+  ): { board: (Tile | null)[][]; move: number }[] => {
+    return this.orderColumns(board)
+      .map((col) => ({ board: this.dropToken(board, col, currentPlayer), move: col }))
+      .filter(
+        (entry): entry is { board: (Tile | null)[][]; move: number } =>
+          entry.board !== null
+      );
   };
 
   /**
    * Détermine si le jeu est terminé et identifie le gagnant s'il y en a un.
-   *
-   * @param board La grille de jeu.
-   * @returns Un objet contenant le statut de fin de jeu et le gagnant s'il y en a un.
    */
-  isTerminal = (
-    board: (Tile | null)[][]
-  ): {
-    gameOver: boolean;
-    winner: (Tile | null) | 'draw' | null;
-  } => {
-    // Vérifier les quatre alignements dans toutes les directions
+  isTerminal = (board: (Tile | null)[][]): TerminalState => {
     const directions = [
-      { r: 0, c: 1 }, // Horizontal
-      { r: 1, c: 0 }, // Vertical
-      { r: 1, c: 1 }, // Diagonale vers le bas à droite
-      { r: 1, c: -1 }, // Diagonale vers le bas à gauche
+      { r: 0, c: 1 },
+      { r: 1, c: 0 },
+      { r: 1, c: 1 },
+      { r: 1, c: -1 },
     ];
 
     const rows = board.length;
     const cols = board[0].length;
 
-    // Parcourir chaque cellule de la grille
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
         const currentPlayer = board[r][c];
         if (currentPlayer !== null) {
-          // Vérifier chaque direction à partir de cette cellule
           for (const dir of directions) {
             let win = true;
             for (let i = 1; i < 4; i++) {
-              // Vérifier les trois prochaines positions
               const nr = r + dir.r * i;
               const nc = c + dir.c * i;
               if (
@@ -252,127 +224,199 @@ export class Minimax {
       }
     }
 
-    // Vérifier si la grille est complètement remplie
     const isDraw = board.every((row) => row.every((cell) => cell !== null));
     if (isDraw) {
       return { gameOver: true, winner: 'draw' };
     }
 
-    // Si aucune des conditions ci-dessus n'est remplie, le jeu continue
     return { gameOver: false, winner: null };
   };
-  /*
-   * Trouve la première rangée vide dans une colonne donnée pour la grille de Connect 4.
-   *
-   * @param board La grille de jeu actuelle.
-   * @param colIndex L'indice de la colonne à vérifier.
-   * @returns L'indice de la première rangée vide dans la colonne, ou -1 si la colonne est pleine.
+
+  /**
+   * Trouve la première rangée vide dans une colonne donnée.
    */
   findFirstEmptyRowInColumn(
     board: (Tile | null)[][],
     colIndex: number
   ): number {
-    if (colIndex < 0) {
-      for (let rowIndex = board.length - 1; rowIndex >= 0; rowIndex--) {
-        for (let j = 0; j < board[rowIndex].length; j++) {
-          if (board[rowIndex][j] === null) {
-            return rowIndex; // Retourne l'index de la première rangée vide trouvée.
-          }
-        }
-      }
-    } else {
-      for (let rowIndex = board.length - 1; rowIndex >= 0; rowIndex--) {
-        if (board[rowIndex][colIndex] === null) {
-          return rowIndex; // Retourne l'index de la première rangée vide trouvée.
-        }
+    for (let rowIndex = board.length - 1; rowIndex >= 0; rowIndex--) {
+      if (board[rowIndex][colIndex] === null) {
+        return rowIndex;
       }
     }
-    return -1; // Retourne -1 si la colonne est pleine.
+
+    return -1;
   }
+
+  private terminalScore(
+    board: (Tile | null)[][],
+    botPlayer: Tile,
+    opponentPlayer: Tile,
+    depth: number
+  ): number | null {
+    const terminal = this.isTerminal(board);
+
+    if (!terminal.gameOver) return null;
+    if (terminal.winner === botPlayer) return WIN_SCORE + depth;
+    if (terminal.winner === opponentPlayer) return -WIN_SCORE - depth;
+
+    return 0;
+  }
+
   minimaxWithAlphaBeta = (
     board: (Tile | null)[][],
     depth: number,
     alpha: number,
     beta: number,
     isMaximizingPlayer: boolean,
-    currentPlayer: Tile,
+    botPlayer: Tile,
     opponentPlayer: Tile
   ): MinimaxResult => {
-    // Si fin de la profondeur ou que la grille est déjà en gameOver
-    if (depth === 0 || this.isTerminal(board).gameOver) {
+    const terminalScore = this.terminalScore(
+      board,
+      botPlayer,
+      opponentPlayer,
+      depth
+    );
+
+    if (terminalScore !== null) {
+      return { score: terminalScore, move: null };
+    }
+
+    if (depth === 0) {
       return {
-        score: this.heuristicEval(board, currentPlayer, opponentPlayer),
-        move: null, // Pas de mouvement associé ici, car c'est une évaluation finale
+        score: this.heuristicEval(board, botPlayer, opponentPlayer),
+        move: null,
       };
     }
 
     let bestMove: number | null = null;
 
-    // Le noeud est max
     if (isMaximizingPlayer) {
       let maxEval = -Infinity;
-      for (let col = 0; col < board[0].length; col++) {
-        if (board[0][col] === null) {
-          const newBoard = this.copyBoard(board);
-          for (let row = board.length - 1; row >= 0; row--) {
-            if (newBoard[row][col] === null) {
-              newBoard[row][col] = currentPlayer;
-              break;
-            }
-          }
+      for (const col of this.orderColumns(board)) {
+        const newBoard = this.dropToken(board, col, botPlayer);
+        if (newBoard === null) continue;
 
-          const result = this.minimaxWithAlphaBeta(
-            newBoard,
-            depth - 1,
-            alpha,
-            beta,
-            false,
-            opponentPlayer,
-            currentPlayer
-          );
+        const result = this.minimaxWithAlphaBeta(
+          newBoard,
+          depth - 1,
+          alpha,
+          beta,
+          false,
+          botPlayer,
+          opponentPlayer
+        );
 
-          if (result.score > maxEval) {
-            maxEval = result.score;
-            bestMove = col;
-          }
-
-          alpha = Math.max(alpha, maxEval);
-          if (alpha >= beta) return { score: alpha, move: bestMove }; // Coupure alpha-bêta
+        if (result.score > maxEval) {
+          maxEval = result.score;
+          bestMove = col;
         }
+
+        alpha = Math.max(alpha, maxEval);
+        if (alpha >= beta) break;
       }
-      return { score: alpha, move: bestMove };
-    } else {
-      let minEval = Infinity;
-      for (let col = 0; col < board[0].length; col++) {
-        if (board[0][col] === null) {
-          const newBoard = this.copyBoard(board);
-          for (let row = board.length - 1; row >= 0; row--) {
-            if (newBoard[row][col] === null) {
-              newBoard[row][col] = currentPlayer;
-              break;
-            }
-          }
 
-          const result = this.minimaxWithAlphaBeta(
-            newBoard,
-            depth - 1,
-            alpha,
-            beta,
-            true,
-            opponentPlayer,
-            currentPlayer
-          );
-
-          if (result.score < minEval) {
-            minEval = result.score;
-            bestMove = col;
-          }
-
-          beta = Math.min(beta, minEval);
-          if (beta <= alpha) return { score: beta, move: bestMove }; // Coupure alpha-bêta
-        }
-      }
-      return { score: beta, move: bestMove };
+      return { score: maxEval, move: bestMove };
     }
+
+    let minEval = Infinity;
+    for (const col of this.orderColumns(board)) {
+      const newBoard = this.dropToken(board, col, opponentPlayer);
+      if (newBoard === null) continue;
+
+      const result = this.minimaxWithAlphaBeta(
+        newBoard,
+        depth - 1,
+        alpha,
+        beta,
+        true,
+        botPlayer,
+        opponentPlayer
+      );
+
+      if (result.score < minEval) {
+        minEval = result.score;
+        bestMove = col;
+      }
+
+      beta = Math.min(beta, minEval);
+      if (beta <= alpha) break;
+    }
+
+    return { score: minEval, move: bestMove };
   };
+
+  findImmediateMove(
+    board: (Tile | null)[][],
+    player: Tile
+  ): number | null {
+    for (const col of this.orderColumns(board)) {
+      const newBoard = this.dropToken(board, col, player);
+      if (newBoard !== null && this.isTerminal(newBoard).winner === player) {
+        return col;
+      }
+    }
+
+    return null;
+  }
+
+  private pickRandomColumn(board: (Tile | null)[][]): number | null {
+    const validColumns = this.getValidColumns(board);
+    if (validColumns.length === 0) return null;
+
+    return validColumns[Math.floor(Math.random() * validColumns.length)];
+  }
+
+  private pickBestScoredMove(moves: CandidateMove[]): number | null {
+    if (moves.length === 0) return null;
+
+    const bestScore = Math.max(...moves.map((move) => move.score));
+    const bestMoves = moves.filter((move) => move.score === bestScore);
+
+    return bestMoves[Math.floor(Math.random() * bestMoves.length)].col;
+  }
+
+  /**
+   * Retourne le meilleur coup du bot selon le palier de difficulté choisi.
+   */
+  getBestMove(
+    board: (Tile | null)[][],
+    difficulty: AiDifficulty,
+    botPlayer: Tile,
+    opponentPlayer: Tile
+  ): number | null {
+    if (difficulty === 'easy') {
+      return this.pickRandomColumn(board);
+    }
+
+    const winningMove = this.findImmediateMove(board, botPlayer);
+    if (winningMove !== null) return winningMove;
+
+    const blockingMove = this.findImmediateMove(board, opponentPlayer);
+    if (blockingMove !== null) return blockingMove;
+
+    const depth = DIFFICULTY_DEPTH[difficulty];
+    const scoredMoves = this.orderColumns(board)
+      .map((col) => {
+        const newBoard = this.dropToken(board, col, botPlayer);
+        if (newBoard === null) return null;
+
+        return {
+          col,
+          score: this.minimaxWithAlphaBeta(
+            newBoard,
+            depth - 1,
+            -Infinity,
+            Infinity,
+            false,
+            botPlayer,
+            opponentPlayer
+          ).score,
+        };
+      })
+      .filter((move): move is CandidateMove => move !== null);
+
+    return this.pickBestScoredMove(scoredMoves);
+  }
 }
