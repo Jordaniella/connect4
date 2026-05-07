@@ -1,6 +1,7 @@
 import { Component, Output, EventEmitter } from '@angular/core';
 import { HeaderComponent } from '../header/header.component';
 import { NgClass } from '@angular/common';
+import { AiDifficulty, Tile } from '../../utils/minimax';
 
 @Component({
   selector: 'app-game-setting',
@@ -17,13 +18,41 @@ export class GameSettingComponent {
     { name: 'blue', isActive: false },
     { name: 'green', isActive: false },
   ];
+  difficultyLevels: DifficultyOption[] = [
+    {
+      value: 'easy',
+      label: 'Débutant',
+      description: 'Le bot joue au hasard pour découvrir le jeu.',
+    },
+    {
+      value: 'medium',
+      label: 'Intermédiaire',
+      description: 'Le bot anticipe quelques coups et bloque les menaces directes.',
+    },
+    {
+      value: 'hard',
+      label: 'Difficile',
+      description: 'Le bot utilise une recherche plus profonde avec élagage alpha-bêta.',
+    },
+    {
+      value: 'expert',
+      label: 'Expert',
+      description: 'Le bot calcule plus loin pour créer et éviter les pièges.',
+    },
+  ];
   btnColor: string = 'yellow';
+  selectedDifficulty: AiDifficulty = 'hard';
+
   @Output() isBotBegin: EventEmitter<boolean> = new EventEmitter<boolean>();
   @Output() tileColor: EventEmitter<Tile> = new EventEmitter<Tile>();
+  @Output() difficultyChange: EventEmitter<AiDifficulty> =
+    new EventEmitter<AiDifficulty>();
   @Output() start: EventEmitter<boolean> = new EventEmitter<boolean>();
 
-  beginnerOfTheGame = (event: any) =>
-    this.isBotBegin.emit(event.target.checked);
+  beginnerOfTheGame = (event: Event) => {
+    const input = event.target as HTMLInputElement;
+    this.isBotBegin.emit(input.checked);
+  };
 
   changeTileColor = (name: Tile) => {
     this.allColors.forEach((element) => {
@@ -34,12 +63,24 @@ export class GameSettingComponent {
     });
     this.tileColor.emit(name);
   };
+
+  changeDifficulty = (difficulty: AiDifficulty) => {
+    this.selectedDifficulty = difficulty;
+    this.difficultyChange.emit(difficulty);
+  };
+
   startGame = () => {
     this.start.emit(true);
   };
 }
+
 type TileColor = {
   name: Tile;
   isActive: boolean;
 };
-type Tile = 'red' | 'yellow' | 'green' | 'white' | 'blue';
+
+type DifficultyOption = {
+  value: AiDifficulty;
+  label: string;
+  description: string;
+};
